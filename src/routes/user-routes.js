@@ -36,7 +36,14 @@ userRouter.post(
 
   // Ef við komumst hingað var notandi skráður inn, senda á /admin
   (req, res) => {
-    res.redirect('/admin');
+
+    const { user: { admin } = {} } = req;
+    console.log(admin);
+    if(admin){
+      res.redirect('/admin');
+    } else {
+      res.redirect('/user');
+    }
   }
 );
 
@@ -44,7 +51,6 @@ userRouter.get('/user', async (req, res) => {
   const { name, description } = req.body;
   const events = await listEvents();
   const { user: { username } = {} } = req;
-
 
   const data = {
     name,
