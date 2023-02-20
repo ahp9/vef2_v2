@@ -1,12 +1,8 @@
 <%- include('header') -%>
 
-<h1>Viðburða umsjón</h1>
+<h1> <%= title %></h1>
 
 <%- include('events') -%>
-
-<% if(admin) { %>
-  <%- include('new_events') -%>
-<% } %>
 
 <div class="user">
   <p class="user__loggedin">Innskráður sem: <strong><%= username %></strong></p>

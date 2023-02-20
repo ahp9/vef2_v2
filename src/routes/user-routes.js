@@ -1,4 +1,5 @@
 import express from 'express';
+import { listEvents } from '../lib/db.js';
 import passport from '../lib/login.js';
 import { createUser, findByUsername } from '../lib/users.js';
 
@@ -6,7 +7,7 @@ export const userRouter = express.Router();
 
 function login(req, res) {
   if (req.isAuthenticated()) {
-    return res.redirect('/admin');
+    return res.redirect('/');
   }
 
   let message = '';
@@ -18,7 +19,7 @@ function login(req, res) {
     req.session.messages = [];
   }
 
-  return res.render('', { message, title: 'Nýskráning' });
+  return res.render('login', { message, title: 'Innskráning' });
 }
 
 
@@ -35,9 +36,32 @@ userRouter.post(
 
   // Ef við komumst hingað var notandi skráður inn, senda á /admin
   (req, res) => {
-    res.redirect('/');
+    res.redirect('/admin');
   }
 );
+
+userRouter.get('/user', async (req, res) => {
+  const { name, description } = req.body;
+  const events = await listEvents();
+  const { user: { username } = {} } = req;
+
+
+  const data = {
+    name,
+    description,
+  };
+
+  // logout hendir session cookie og session
+  res.render('user', {
+    events,
+    username,
+    title: 'Viðburðir',
+    data,
+    admin: false })
+});
+
+
+
 
 userRouter.get('/logout', (req, res) => {
   // logout hendir session cookie og session
@@ -104,9 +128,9 @@ userRouter.post(
   register,
   passport.authenticate('local', {
     failureMessage: 'Notandanafn eða lykilorð vitlaust.',
-    failureRedirect: '/login',
+    failureRedirect: '/register',
   }),
   (req, res) => {
-    res.redirect('/');
+    res.redirect('/user');
   },
 );
