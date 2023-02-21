@@ -64,8 +64,7 @@ userRouter.get('/user', async (req, res) => {
     page, offset, totalEvents, eventsLength: events.length,
   },
   );
-  console.log(user);
-  console.log(user.username);
+
   // logout hendir session cookie og session
   res.render('user', {
     events,

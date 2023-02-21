@@ -35,7 +35,6 @@ async function index(req, res) {
   },
   );
 
-  console.log(user);
   res.render('admin', {
     events,
     errors: [],
@@ -212,3 +211,4 @@ async function deleteRoute(req, res) {
   return res.render('error', { title: 'Gat ekki eytt færslu' });
 }
 adminRouter.post('/delete/:id', ensureLoggedIn, catchErrors(deleteRoute));
+

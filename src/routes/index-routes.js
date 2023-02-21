@@ -28,7 +28,6 @@ async function indexRoute(req, res) {
     page, offset, totalEvents, eventsLength: events.length,
   },
   );
-  console.log(paging);
 
   res.render('index', {
     title: 'Viðburðasíðan',
@@ -43,6 +42,10 @@ async function indexRoute(req, res) {
 async function eventRoute(req, res, next) {
   const { slug } = req.params;
   const event = await listEvent(slug);
+  const user = {
+    username: 'guest',
+  }
+
 
   if (!event) {
     return next();
@@ -53,6 +56,7 @@ async function eventRoute(req, res, next) {
   return res.render('event', {
     title: `${event.name} — Viðburðasíðan`,
     event,
+    user,
     registered,
     errors: [],
     data: {},
@@ -69,15 +73,18 @@ async function eventRegisteredRoute(req, res) {
 }
 
 async function validationCheck(req, res, next) {
-  const { name, comment } = req.body;
+  console.log(req.body);
+  const { comment } = req.body;
 
+  const user = {
+    username: 'guest',
+  }
   // TODO tvítekning frá því að ofan
   const { slug } = req.params;
   const event = await listEvent(slug);
   const registered = await listRegistered(event.id);
 
   const data = {
-    name,
     comment,
   };
 
@@ -88,6 +95,7 @@ async function validationCheck(req, res, next) {
       title: `${event.name} — Viðburðasíðan`,
       data,
       event,
+      user,
       registered,
       errors: validation.errors,
     });
@@ -97,6 +105,7 @@ async function validationCheck(req, res, next) {
 }
 
 async function registerRoute(req, res) {
+  console.log(req.body);
   const { name, comment } = req.body;
   const { slug } = req.params;
   const event = await listEvent(slug);
