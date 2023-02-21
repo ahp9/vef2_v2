@@ -1,22 +1,37 @@
 import express from 'express';
 import { validationResult } from 'express-validator';
 import { catchErrors } from '../lib/catch-errors.js';
-import { listEvent, listEvents, listRegistered, register } from '../lib/db.js';
+import { listEvent, listEvents, listRegistered, register, total } from '../lib/db.js';
+import { PAGE_SIZE, pagingInfo } from '../lib/page.js';
 import {
   registrationValidationMiddleware,
   sanitizationMiddleware,
-  xssSanitizationMiddleware,
+  xssSanitizationMiddleware
 } from '../lib/validation.js';
 
 export const indexRouter = express.Router();
 
 async function indexRoute(req, res) {
-  const events = await listEvents();
+  let { page = 1 } = req.query;
+  page = Number(page);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const { search } = req.query;
+
+
+  const events = await listEvents(offset, PAGE_SIZE, search);
+  const totalEvents = await total(search);
+  const paging = await pagingInfo( {
+    page, offset, totalEvents, eventsLength: events.length,
+  },
+  );
 
   res.render('index', {
     title: 'Viðburðasíðan',
     admin: false,
     events,
+    paging
+
   });
 }
 

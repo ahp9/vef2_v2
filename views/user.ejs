@@ -2,10 +2,10 @@
 
 <h1> <%= title %></h1>
 
-<%- include('events') -%>
+<%- include('page') -%>
 
 <div class="user">
-  <p class="user__loggedin">Innskráður sem: <strong><%= username %></strong></p>
+  <p class="user__loggedin">Innskráður sem: <strong><%= user.username %></strong></p>
   <p class="user__logout"><a href="/logout">Útskrá</a></p>
 </div>
 

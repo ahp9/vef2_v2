@@ -1,6 +1,7 @@
 import express from 'express';
-import { listEvents } from '../lib/db.js';
+import { listEvents, total } from '../lib/db.js';
 import passport from '../lib/login.js';
+import { PAGE_SIZE, pagingInfo } from '../lib/page.js';
 import { createUser, findByUsername } from '../lib/users.js';
 
 export const userRouter = express.Router();
@@ -38,7 +39,6 @@ userRouter.post(
   (req, res) => {
 
     const { user: { admin } = {} } = req;
-    console.log(admin);
     if(admin){
       res.redirect('/admin');
     } else {
@@ -48,21 +48,30 @@ userRouter.post(
 );
 
 userRouter.get('/user', async (req, res) => {
-  const { name, description } = req.body;
-  const events = await listEvents();
-  const { user: { username } = {} } = req;
+  const { user } = req;
 
-  const data = {
-    name,
-    description,
-  };
 
+  let { page = 1 } = req.query;
+  page = Number(page);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const { search } = req.query;
+
+
+  const events = await listEvents(offset, PAGE_SIZE, search);
+  const totalEvents = await total(search);
+  const paging = await pagingInfo( {
+    page, offset, totalEvents, eventsLength: events.length,
+  },
+  );
+  console.log(user);
+  console.log(user.username);
   // logout hendir session cookie og session
   res.render('user', {
     events,
-    username,
+    user,
     title: 'Viðburðir',
-    data,
+    paging,
     admin: false })
 });
 

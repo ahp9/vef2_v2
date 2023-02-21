@@ -117,15 +117,20 @@ export async function register({ name, comment, event } = {}) {
   return null;
 }
 
-export async function listEvents() {
+export async function listEvents(offset = 0, limit = 10) {
+
+  const value = [offset, limit];
+
   const q = `
     SELECT
       id, name, slug, description, created, updated
     FROM
       events
+    ORDER BY created DESC
+    OFFSET $1 LIMIT $2
   `;
 
-  const result = await query(q);
+  const result = await query(q, value);
 
   if (result) {
     return result.rows;
@@ -150,6 +155,13 @@ export async function listEvent(slug) {
   }
 
   return null;
+}
+
+export async function total(search){
+  const result = await query(
+    'SELECT COUNT(*) AS count FROM events', search ? [search] : search
+  );
+  return (result.rows &&result.rows[0] && result.rows[0].count );
 }
 
 // TODO gætum fellt þetta fall saman við það að ofan

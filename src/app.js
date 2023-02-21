@@ -12,7 +12,7 @@ import { userRouter } from './routes/user-routes.js';
 dotenv.config();
 
 const {
-  PORT: port = 3000,
+  PORT: port = 3001,
   SESSION_SECRET: sessionSecret,
   DATABASE_URL: connectionString,
 } = process.env;

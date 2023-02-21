@@ -1,0 +1,32 @@
+<section class="events">
+  <h2 class="events__title">Viðburðir</h2>
+  <p class="events__total">Fjöldi viðburda: <%= paging.total %></p>
+
+  <% if (events.length === 0) { %>
+    <p class="events__empty">Engir viðburðir.</p>
+  <% } else { %>
+    <table class="events__table" cellpadding="0">
+      <tr>
+        <th>Viðburður</th>
+        <th>Lýsing</th>
+        <% if (admin) { %>
+          <th>Eyða</th>
+        <% } %>
+      </tr>
+      <% events.forEach((row) => { %>
+        <tr>
+          <td class="name"> <a href="/<%= row.slug %>" >  <%= row.anonymous ? 'Nafnlaust' : row.name %></a></td>
+          <td class="description"><%= row.description %></td>
+          <% if (admin) { %>
+            <td>
+              <form class="delete-form" method="post" action="/admin/delete/<%= row.id %>">
+                <button class="button">Eyða</button>
+              </form>
+            </td>
+          <% } %>
+        </tr>
+      <% }) %>
+      </tr>
+    </table>
+  <% } %>
+</section>
