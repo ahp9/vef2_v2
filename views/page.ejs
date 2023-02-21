@@ -9,7 +9,7 @@
       <tr>
         <th>Viðburður</th>
         <th>Lýsing</th>
-        <% if (admin) { %>
+        <% if (user.admin) { %>
           <th>Eyða</th>
         <% } %>
       </tr>
@@ -17,7 +17,7 @@
         <tr>
           <td class="name"> <a href="/<%= row.slug %>" >  <%= row.anonymous ? 'Nafnlaust' : row.name %></a></td>
           <td class="description"><%= row.description %></td>
-          <% if (admin) { %>
+          <% if (user.admin) { %>
             <td>
               <form class="delete-form" method="post" action="/admin/delete/<%= row.id %>">
                 <button class="button">Eyða</button>
@@ -30,3 +30,19 @@
     </table>
   <% } %>
 </section>
+
+<div class="paging">
+  <% if (paging.hasPrev) { %>
+    <a class="paging__prev" href="<%= paging.prevUrl %>">Fyrri síða</a>
+  <% } else { %>
+    <span class="paging__prev">Fyrri síða</span>
+  <% } %>
+
+  <div class="paging__info">Síða <%= paging.page %> af <%= paging.totalPages %></div>
+
+  <% if (paging.hasNext) { %>
+    <a class="paging__next" href="<%= paging.nextUrl %>">Næsta síða</a>
+  <% } else { %>
+    <span class="paging__next">Næsta síða</span>
+  <% } %>
+</div>

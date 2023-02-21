@@ -2,13 +2,12 @@ import express from 'express';
 import { validationResult } from 'express-validator';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
-  createEvent,
-  listEvent,
+  createEvent, deleteRow, listEvent,
   listEventByName,
-  listEvents,
-  updateEvent
+  listEvents, total, updateEvent
 } from '../lib/db.js';
 import { ensureLoggedIn } from '../lib/login.js';
+import { PAGE_SIZE, pagingInfo } from '../lib/page.js';
 import { slugify } from '../lib/slugify.js';
 import {
   registrationValidationMiddleware,
@@ -19,17 +18,32 @@ import {
 export const adminRouter = express.Router();
 
 async function index(req, res) {
-  const events = await listEvents();
-  const { user: { username } = {} } = req || {};
+  const { user } = req;
 
-  return res.render('admin', {
-    username,
+
+  let { page = 1 } = req.query;
+  page = Number(page);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const { search } = req.query;
+
+
+  const events = await listEvents(offset, PAGE_SIZE, search);
+  const totalEvents = await total(search);
+  const paging = await pagingInfo( {
+    page, offset, totalEvents, eventsLength: events.length,
+  },
+  );
+
+  console.log(user);
+  res.render('admin', {
     events,
     errors: [],
     data: {},
-    title: 'Viðburðir — umsjón',
-    admin: true,
-  });
+    user,
+    title: 'Viðburðir',
+    paging,
+    admin: false });
 }
 
 async function validationCheck(req, res, next) {
@@ -110,6 +124,7 @@ async function validationCheckUpdate(req, res, next) {
 }
 
 async function registerRoute(req, res) {
+
   const { name, description } = req.body;
   const slug = slugify(name);
 
@@ -184,3 +199,16 @@ adminRouter.post(
   sanitizationMiddleware('description'),
   catchErrors(updateRoute)
 );
+
+async function deleteRoute(req, res) {
+  const { id } = req.params;
+
+  const deleted = deleteRow(id);
+
+  if (deleted) { // Tæknilega böggur hér...
+    return res.redirect('/admin');
+  }
+
+  return res.render('error', { title: 'Gat ekki eytt færslu' });
+}
+adminRouter.post('/delete/:id', ensureLoggedIn, catchErrors(deleteRoute));

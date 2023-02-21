@@ -15,7 +15,10 @@ async function indexRoute(req, res) {
   let { page = 1 } = req.query;
   page = Number(page);
   const offset = (page - 1) * PAGE_SIZE;
-
+  const user = {
+    username: null,
+    admin: false
+  }
   const { search } = req.query;
 
 
@@ -25,10 +28,12 @@ async function indexRoute(req, res) {
     page, offset, totalEvents, eventsLength: events.length,
   },
   );
+  console.log(paging);
 
   res.render('index', {
     title: 'Viðburðasíðan',
     admin: false,
+    user,
     events,
     paging
 

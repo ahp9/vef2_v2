@@ -63,10 +63,12 @@ export async function createEvent({ name, slug, description } = {}) {
       (name, slug, description)
     VALUES
       ($1, $2, $3)
-    RETURNING id, name, slug, description;
+    RETURNING *
   `;
+
   const values = [name, slug, description];
   const result = await query(q, values);
+  console.log(result);
 
   if (result && result.rowCount === 1) {
     return result.rows[0];
@@ -115,6 +117,24 @@ export async function register({ name, comment, event } = {}) {
   }
 
   return null;
+}
+
+export async function deleteRow(id) {
+  let result = [];
+  try {
+    const queryResult = await query(
+      'DELETE FROM signatures WHERE id = $1',
+      [id],
+    );
+
+    if (queryResult && queryResult.rows) {
+      result = queryResult.rows;
+    }
+  } catch (e) {
+    console.error('Error selecting id', e);
+  }
+
+  return result;
 }
 
 export async function listEvents(offset = 0, limit = 10) {

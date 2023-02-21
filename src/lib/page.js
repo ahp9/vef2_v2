@@ -10,7 +10,7 @@ export function catchErrors(fn) {
 }
 
 // Ætti ekki að vera hér...
-export const PAGE_SIZE = 50;
+export const PAGE_SIZE = 10;
 
 export async function pagingInfo({
   page, offset, totalEvents, eventsLength, baseUrl = '',
