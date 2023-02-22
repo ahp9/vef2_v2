@@ -22,6 +22,18 @@ export function registrationValidationMiddleware(textField) {
   ];
 }
 
+export function registrationValidationMiddlewareComment(textField) {
+  return [
+    body(textField)
+      .isLength({ max: 400 })
+      .withMessage(
+        `${
+          textField === 'comment' ? 'Athugasemd' : 'Lýsing'
+        } má að hámarki vera 400 stafir`
+      ),
+  ];
+}
+
 // Viljum keyra sér og með validation, ver gegn „self XSS“
 export function xssSanitizationMiddleware(textField) {
   return [

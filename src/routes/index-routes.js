@@ -4,7 +4,7 @@ import { catchErrors } from '../lib/catch-errors.js';
 import { listEvent, listEvents, listRegistered, register, total } from '../lib/db.js';
 import { PAGE_SIZE, pagingInfo } from '../lib/page.js';
 import {
-  registrationValidationMiddleware,
+  registrationValidationMiddlewareComment,
   sanitizationMiddleware,
   xssSanitizationMiddleware
 } from '../lib/validation.js';
@@ -42,10 +42,8 @@ async function indexRoute(req, res) {
 async function eventRoute(req, res, next) {
   const { slug } = req.params;
   const event = await listEvent(slug);
-  const user = {
-    username: 'guest',
-  }
-
+  const {user} = req;
+  const message  = '';
 
   if (!event) {
     return next();
@@ -57,6 +55,7 @@ async function eventRoute(req, res, next) {
     title: `${event.name} — Viðburðasíðan`,
     event,
     user,
+    message,
     registered,
     errors: [],
     data: {},
@@ -73,18 +72,22 @@ async function eventRegisteredRoute(req, res) {
 }
 
 async function validationCheck(req, res, next) {
-  console.log(req.body);
-  const { comment } = req.body;
+  const { comment } =  'Skradur inn';
+  const {user} = req;
 
-  const user = {
-    username: 'guest',
+
+  if(!user){
+    return res.redirect('login');
   }
+  const message = '';
+  const name = user.username;
   // TODO tvítekning frá því að ofan
   const { slug } = req.params;
   const event = await listEvent(slug);
   const registered = await listRegistered(event.id);
 
   const data = {
+    name,
     comment,
   };
 
@@ -97,6 +100,7 @@ async function validationCheck(req, res, next) {
       event,
       user,
       registered,
+      message,
       errors: validation.errors,
     });
   }
@@ -105,8 +109,9 @@ async function validationCheck(req, res, next) {
 }
 
 async function registerRoute(req, res) {
-  console.log(req.body);
-  const { name, comment } = req.body;
+  const { comment } = req.body;
+  const {user} = req;
+  const name = user.username;
   const { slug } = req.params;
   const event = await listEvent(slug);
 
@@ -120,14 +125,14 @@ async function registerRoute(req, res) {
     return res.redirect(`/${event.slug}`);
   }
 
-  return res.render('error');
+  return res.redirect(`/${event.slug}`);
 }
 
 indexRouter.get('/', catchErrors(indexRoute));
 indexRouter.get('/:slug', catchErrors(eventRoute));
 indexRouter.post(
   '/:slug',
-  registrationValidationMiddleware('comment'),
+  registrationValidationMiddlewareComment('comment'),
   xssSanitizationMiddleware('comment'),
   catchErrors(validationCheck),
   sanitizationMiddleware('comment'),

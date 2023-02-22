@@ -68,7 +68,6 @@ export async function createEvent({ name, slug, description } = {}) {
 
   const values = [name, slug, description];
   const result = await query(q, values);
-  console.log(result);
 
   if (result && result.rowCount === 1) {
     return result.rows[0];
@@ -100,7 +99,30 @@ export async function updateEvent(id, { name, slug, description } = {}) {
   return null;
 }
 
+async function checkIfRegistered(name, event) {
+
+  const q = 'SELECT * FROM registrations WHERE name = $1 AND event = $2';
+
+  try {
+    const values = [name, event];
+    const result = await query(q, values);
+    if (result.rowCount === 1) {
+      return true
+    }
+  } catch (e) {
+    console.error('Gat ekki fundið notanda eftir notendnafni');
+    return null;
+  }
+
+  return false;
+}
+
 export async function register({ name, comment, event } = {}) {
+  const isRegister = await checkIfRegistered(name, event);
+  if(isRegister){
+    return null;
+  }
+
   const q = `
     INSERT INTO registrations
       (name, comment, event)
@@ -119,11 +141,13 @@ export async function register({ name, comment, event } = {}) {
   return null;
 }
 
+
+
 export async function deleteRow(id) {
   let result = [];
   try {
     const queryResult = await query(
-      'DELETE FROM signatures WHERE id = $1',
+      'DELETE FROM events WHERE id = $1;',
       [id],
     );
 

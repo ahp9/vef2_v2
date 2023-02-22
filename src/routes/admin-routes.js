@@ -27,7 +27,6 @@ async function index(req, res) {
 
   const { search } = req.query;
 
-
   const events = await listEvents(offset, PAGE_SIZE, search);
   const totalEvents = await total(search);
   const paging = await pagingInfo( {
@@ -42,7 +41,7 @@ async function index(req, res) {
     user,
     title: 'Viðburðir',
     paging,
-    admin: false });
+    admin: user.admin });
 }
 
 async function validationCheck(req, res, next) {

@@ -26,19 +26,24 @@
   <div class="event__registration">
     <h2 class="event__subtitle">Skráðu þig</h2>
     <form method="post" action="/<%= event.slug %>" enctype="application/x-www-form-urlencoded" class="">
+
       <div class="field field--textarea<%= locals.isInvalid('comment', errors) ?  ' field--invalid' : '' %>">
-        <label for="name">Notendanafn</label>
-        <p name='name' id='name'> <strong><%= user.username %></strong></p>
         <label for="comment">Athugasemd:</label>
         <textarea name="comment" id="comment"><%= data.comment %></textarea>
       </div>
 
+      <% if (message) { %>
+        <p><%= message %></p>
+      <% } %>
       <button class="button">Skrá mig </button>
     </form>
   </div>
   <div class="link">
-      <p class="user__loggedin">Innskráður sem: <strong><%= user.username %></strong></p>
-      <a class="link__link" href="/user">Til baka</a>
+    <% if (typeof user !== 'undefined' && typeof user.username !== 'undefined'){ %>
+      <a class="link__link" href="/admin">Til baka</a>
+    <% } else  { %>
+      <a class="link__link" href="/">Til baka</a>
+    <% } %>
   </div>
 </section>
 

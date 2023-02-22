@@ -1,12 +1,10 @@
 import express from 'express';
-import { listEvents, total } from '../lib/db.js';
 import passport from '../lib/login.js';
-import { PAGE_SIZE, pagingInfo } from '../lib/page.js';
 import { createUser, findByUsername } from '../lib/users.js';
 
 export const userRouter = express.Router();
 
-function login(req, res) {
+export function login(req, res) {
   if (req.isAuthenticated()) {
     return res.redirect('/');
   }
@@ -37,51 +35,18 @@ userRouter.post(
 
   // Ef við komumst hingað var notandi skráður inn, senda á /admin
   (req, res) => {
-
-    const { user: { admin } = {} } = req;
-    if(admin){
-      res.redirect('/admin');
-    } else {
-      res.redirect('/user');
-    }
+    res.redirect('/admin');
   }
 );
 
-userRouter.get('/user', async (req, res) => {
-  const { user } = req;
 
-
-  let { page = 1 } = req.query;
-  page = Number(page);
-  const offset = (page - 1) * PAGE_SIZE;
-
-  const { search } = req.query;
-
-
-  const events = await listEvents(offset, PAGE_SIZE, search);
-  const totalEvents = await total(search);
-  const paging = await pagingInfo( {
-    page, offset, totalEvents, eventsLength: events.length,
-  },
-  );
-
-  // logout hendir session cookie og session
-  res.render('user', {
-    events,
-    user,
-    title: 'Viðburðir',
-    paging,
-    admin: false })
+userRouter.get('/logout', (req, res, next) => {
+  req.logout((err) => {
+    if (err) { return next(err); }
+    return res.redirect('/');
+  });
 });
 
-
-
-
-userRouter.get('/logout', (req, res) => {
-  // logout hendir session cookie og session
-  req.logout();
-  res.redirect('/');
-});
 
 userRouter.get('/register', (req,res) => {
   let message = '';
@@ -121,13 +86,10 @@ async function validateUser(username, password) {
 async function register(req, res, next) {
   const { username, password } = req.body;
 
-  const validationMessage = await validateUser(username, password);
+  const message = await validateUser(username, password);
 
-  if (validationMessage) {
-    return res.send(`
-      <p>${validationMessage}</p>
-      <a href="/register">Reyna aftur</a>
-    `);
+  if (message) {
+    return res.render('register', {message, title : 'Nýskráning'});
   }
 
   await createUser(username, password, false);
@@ -145,6 +107,6 @@ userRouter.post(
     failureRedirect: '/register',
   }),
   (req, res) => {
-    res.redirect('/user');
+    res.redirect('/admin');
   },
 );
