@@ -35,7 +35,6 @@ async function indexRoute(req, res) {
     user,
     events,
     paging
-
   });
 }
 
