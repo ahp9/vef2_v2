@@ -57,16 +57,16 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
   return query(data.toString('utf-8'));
 }
 
-export async function createEvent({ name, slug, description } = {}) {
+export async function createEvent({ name, slug, description, location, url } = {}) {
   const q = `
     INSERT INTO events
-      (name, slug, description)
+      (name, slug, description, location, url)
     VALUES
-      ($1, $2, $3)
+      ($1, $2, $3, $4, $5)
     RETURNING *
   `;
 
-  const values = [name, slug, description];
+  const values = [name, slug, description, location, url];
   const result = await query(q, values);
 
   if (result && result.rowCount === 1) {
@@ -77,19 +77,21 @@ export async function createEvent({ name, slug, description } = {}) {
 }
 
 // Updatear ekki description, erum ekki að útfæra partial update
-export async function updateEvent(id, { name, slug, description } = {}) {
+export async function updateEvent(id, { name, slug, description, location, url } = {}) {
   const q = `
     UPDATE events
       SET
         name = $1,
         slug = $2,
         description = $3,
+        location = $4,
+        url = $5,
         updated = CURRENT_TIMESTAMP
     WHERE
-      id = $4
-    RETURNING id, name, slug, description;
+      id = $6
+    RETURNING id, name, slug, description, location, url;
   `;
-  const values = [name, slug, description, id];
+  const values = [name, slug, description, location, url, id];
   const result = await query(q, values);
 
   if (result && result.rowCount === 1) {
@@ -117,22 +119,40 @@ async function checkIfRegistered(name, event) {
   return false;
 }
 
-export async function register({ name, comment, event } = {}) {
-  const isRegister = await checkIfRegistered(name, event);
-  if(isRegister){
-    return null;
+async function deleteRegister(name){
+  let result = [];
+  try {
+    const queryResult = await query(
+      'DELETE FROM registrations WHERE name = $1;',
+      [name],
+    );
+
+    if (queryResult && queryResult.rows) {
+      result = queryResult.rows;
+    }
+  } catch (e) {
+    console.error('Error selecting name', e);
   }
 
-  const q = `
+  return result;
+}
+
+export async function register({ name, comment, event } = {}) {
+  const isRegister = await checkIfRegistered(name, event);
+  let result
+  if(isRegister){
+    result = deleteRegister(name);
+  } else  {
+    const q = `
     INSERT INTO registrations
       (name, comment, event)
     VALUES
       ($1, $2, $3)
     RETURNING
-      id, name, comment, event;
-  `;
-  const values = [name, comment, event];
-  const result = await query(q, values);
+      id, name, comment, event;`;
+    const values = [name, comment, event];
+    result = await query(q, values);
+  }
 
   if (result && result.rowCount === 1) {
     return result.rows[0];
@@ -167,7 +187,7 @@ export async function listEvents(offset = 0, limit = 10) {
 
   const q = `
     SELECT
-      id, name, slug, description, created, updated
+      id, name, slug, description, location, url, created, updated
     FROM
       events
     ORDER BY created DESC
@@ -186,7 +206,7 @@ export async function listEvents(offset = 0, limit = 10) {
 export async function listEvent(slug) {
   const q = `
     SELECT
-      id, name, slug, description, created, updated
+      id, name, slug, description, location, url, created, updated
     FROM
       events
     WHERE slug = $1
@@ -212,7 +232,7 @@ export async function total(search){
 export async function listEventByName(name) {
   const q = `
     SELECT
-      id, name, slug, description, created, updated
+      id, name, slug, description, location, url, created, updated
     FROM
       events
     WHERE name = $1

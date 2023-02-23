@@ -10,6 +10,8 @@
       <li class="events__event">
         <a href="/<%= event.slug %>" class="events__eventLink"><%= event.name %></a>
         <p class="events__eventDescription"><%= event.description %></p>
+        <p class="events__eventLocation"><%= event.location %></p>
+        <a class="events__eventUrl" href="<%= event.url %>"><%= event.url %></a>
         <% if (user.admin) { %>
           <p><a href="/admin/<%= event.slug %>" class="events__eventEdit">Uppfæra viðburð</a>
           <form class="delete-form" method="post" action="/admin/delete/<%= event.id %>">

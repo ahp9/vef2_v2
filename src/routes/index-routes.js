@@ -16,8 +16,8 @@ async function indexRoute(req, res) {
   page = Number(page);
   const offset = (page - 1) * PAGE_SIZE;
   const user = {
-    username: null,
-    admin: false
+    username: '',
+    admin: false,
   }
   const { search } = req.query;
 
@@ -50,7 +50,6 @@ async function eventRoute(req, res, next) {
   }
 
   const registered = await listRegistered(event.id);
-
   return res.render('event', {
     title: `${event.name} — Viðburðasíðan`,
     event,
@@ -77,7 +76,7 @@ async function validationCheck(req, res, next) {
 
 
   if(!user){
-    return res.redirect('login');
+    return res.redirect('register');
   }
   const message = '';
   const name = user.username;

@@ -44,15 +44,46 @@ async function index(req, res) {
     admin: user.admin });
 }
 
-async function validationCheck(req, res, next) {
-  const { name, description } = req.body;
 
-  const events = await listEvents();
-  const { user: { username } = {} } = req;
+function isValidUrl(urlString) {
+  try {
+
+    if (urlString === null){
+      return true;
+    }
+    const url = new URL(urlString);
+    if(url){
+      return true;
+    }
+    return false;
+  } catch(e){
+    return false;
+  }
+}
+
+async function validationCheck(req, res, next) {
+  const { name, description, location, url } = req.body;
+
+  let { page = 1 } = req.query;
+  page = Number(page);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const { search } = req.query;
+
+  const events = await listEvents(offset, PAGE_SIZE, search);
+  const totalEvents = await total(search);
+  const paging = await pagingInfo( {
+    page, offset, totalEvents, eventsLength: events.length,
+  },
+  );
+
+  const {user} = req
 
   const data = {
     name,
     description,
+    location,
+    url,
   };
 
   const validation = validationResult(req);
@@ -68,12 +99,20 @@ async function validationCheck(req, res, next) {
     });
   }
 
+  if(!isValidUrl(url) && url !== ''){
+    customValidations.push({
+      param: 'url',
+      msg: 'Ekki lögleg vefsíða',
+    });
+  }
+
   if (!validation.isEmpty() || customValidations.length > 0) {
     return res.render('admin', {
       events,
-      username,
+      user,
       title: 'Viðburðir — umsjón',
       data,
+      paging,
       errors: validation.errors.concat(customValidations),
       admin: true,
     });
@@ -83,7 +122,7 @@ async function validationCheck(req, res, next) {
 }
 
 async function validationCheckUpdate(req, res, next) {
-  const { name, description } = req.body;
+  const { name, description, location, url } = req.body;
   const { slug } = req.params;
   const { user: { username } = {} } = req;
 
@@ -92,6 +131,8 @@ async function validationCheckUpdate(req, res, next) {
   const data = {
     name,
     description,
+    location,
+    url,
   };
 
   const validation = validationResult(req);
@@ -104,6 +145,13 @@ async function validationCheckUpdate(req, res, next) {
     customValidations.push({
       param: 'name',
       msg: 'Viðburður með þessu nafni er til',
+    });
+  }
+
+  if(!isValidUrl(url) && url !== ''){
+    customValidations.push({
+      param: 'url',
+      msg: 'Ekki lögleg vefsíða',
     });
   }
 
@@ -123,10 +171,10 @@ async function validationCheckUpdate(req, res, next) {
 
 async function registerRoute(req, res) {
 
-  const { name, description } = req.body;
+  const { name, description, location, url } = req.body;
   const slug = slugify(name);
 
-  const created = await createEvent({ name, slug, description });
+  const created = await createEvent({ name, slug, description, location, url });
 
   if (created) {
     return res.redirect('/admin');
@@ -136,7 +184,7 @@ async function registerRoute(req, res) {
 }
 
 async function updateRoute(req, res) {
-  const { name, description } = req.body;
+  const { name, description, location, url } = req.body;
   const { slug } = req.params;
 
   const event = await listEvent(slug);
@@ -147,6 +195,8 @@ async function updateRoute(req, res) {
     name,
     slug: newSlug,
     description,
+    location,
+    url,
   });
 
   if (updated) {
@@ -171,7 +221,8 @@ async function eventRoute(req, res, next) {
     title: `${event.name} — Viðburðir — umsjón`,
     event,
     errors: [],
-    data: { name: event.name, description: event.description },
+    data: { name: event.name, description: event.description, location: event.location,
+      url: event.url },
   });
 }
 

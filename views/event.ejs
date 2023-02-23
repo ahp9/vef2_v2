@@ -35,7 +35,21 @@
       <% if (message) { %>
         <p><%= message %></p>
       <% } %>
-      <button class="button">Skrá mig </button>
+
+      <% let isRegistered = false; %>
+      <% if (registered.length === 0) { %>
+        <button class="button">Skrá mig </button>
+      <% } else { %>
+        <% registered.forEach((r) => { %>
+          <% if(r.name === user.username) { %>
+            <button class="button">Skrá mig úr </button>
+            <% isRegistered = true; %>
+          <% } %>
+        <% }); %>
+        <% if (!isRegistered) { %>
+          <button class="button">Skrá mig </button>
+        <% } %>
+      <% } %>
     </form>
   </div>
   <div class="link">

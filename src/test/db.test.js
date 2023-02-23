@@ -6,7 +6,7 @@ import {
   dropSchema,
   end,
   register,
-  updateEvent,
+  updateEvent
 } from '../lib/db';
 
 dotenv.config({ path: './.env.test' });
@@ -87,3 +87,4 @@ describe('db', () => {
     expect(registration).toBeNull();
   });
 });
+

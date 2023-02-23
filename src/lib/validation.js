@@ -19,6 +19,14 @@ export function registrationValidationMiddleware(textField) {
           textField === 'comment' ? 'Athugasemd' : 'Lýsing'
         } má að hámarki vera 400 stafir`
       ),
+    body('location')
+      .isLength({ max: 400 })
+      .withMessage(
+        `${
+          textField === 'comment' ? 'Athugasemd' : 'Lýsing'
+        } má að hámarki vera 400 stafir`
+      ),
+
   ];
 }
 
