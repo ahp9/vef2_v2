@@ -4,6 +4,7 @@ There is a user already available for you to use, that is the admin. Admin can a
 The log informations for the admin is as follows: 
 - username: admin
 - passwords: 1234
+
 This site is in Icelandic because the site was made as a project in Web Programming 2, at the University of Iceland.
 
 ```bash
